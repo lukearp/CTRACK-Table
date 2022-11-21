@@ -11,17 +11,21 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using Microsoft.Azure.WebJobs.Extensions.Storage.Blobs;
 
 namespace Company.Function
 {
     public static class CTRACK_Parse
     {
         [FunctionName("CTRACK_Parse")]
+        [StorageAccount("CTRACK_STORAGE")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [Blob("test/data.json", FileAccess.Read)] Stream blob,
             ILogger log)
         {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            string requestBody = await new StreamReader(blob).ReadToEndAsync();
+
             JArray data = JArray.Parse(requestBody);
             List<CtrackActor> actors = new List<CtrackActor>();
             List<CtrackContacts> contacts;
@@ -130,6 +134,12 @@ namespace Company.Function
         public string uri {get;set;}
         public string httpMethod {get;set;}
         public CtrackActor requestBody {get;set;}
+        public string resultName {get;}
+
+        public CtrackBulkRequestItem ()
+        {
+            resultName = Guid.NewGuid().ToString().Replace("-","");
+        }
     }
 
     class CtrackActor {

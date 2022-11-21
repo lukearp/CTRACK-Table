@@ -1,0 +1,25 @@
+{
+    "generatedBy": "Microsoft.NET.Sdk.Functions.Generator-4.1.1",
+    "configurationSource": "attributes",
+    "bindings": [
+      {
+        "type": "httpTrigger",
+        "methods": [
+          "get",
+          "post"
+        ],
+        "authLevel": "function",
+        "name": "req"
+      },
+      {
+        "name": "inputblob",
+        "type": "blob",
+        "path": "test/data.json",
+        "connection": "CTRACK_STORAGE",
+        "direction": "in"
+      }
+    ],
+    "disabled": false,
+    "scriptFile": "../bin/CTRACK-Table.dll",
+    "entryPoint": "Company.Function.CTRACK_Parse.Run"
+  }
