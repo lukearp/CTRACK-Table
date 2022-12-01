@@ -65,9 +65,11 @@ namespace Company.Function
 
     class ParticipantInfo
     {
+        public string prefix {get;set;}
         public string firstName { get; set; }
         public string middleName { get; set; }
         public string lastName { get; set; }
+        public string suffix {get;set;}
 
         public ParticipantInfo()
         {
@@ -80,7 +82,10 @@ namespace Company.Function
             string given = "";
             string sur = "";
             string middle = "";
-            string pattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
+            string suffixLocal = "";
+            string prefix = "";
+            string suffixPattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
+            string prefixPattern = @"";
             switch (count)
             {
                 case 2:
@@ -91,10 +96,28 @@ namespace Company.Function
                     }
                 case 3:
                     {
-                        if (Regex.IsMatch(name.Split(' ')[2], pattern))
+                        if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
                         {
                             sur = name.Split(' ')[0];
                             given = name.Split(' ')[1];
+                            suffixLocal = name.Split(' ')[2];
+                        }
+                        else
+                        {
+                            sur = name.Split(' ')[0];
+                            given = name.Split(' ')[1];
+                            middle = name.Split(' ')[2];
+                        }
+                        break;
+                    }
+                case 4:
+                    {
+                        if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
+                        {
+                            sur = name.Split(' ')[0];
+                            given = name.Split(' ')[1];
+                            middle = name.Split(' ')[2];
+                            suffixLocal = name.Split(' ')[3];
                         }
                         else
                         {
@@ -112,7 +135,7 @@ namespace Company.Function
                         break;
                     }
             }
-            return new ParticipantInfo() { firstName = given, lastName = sur, middleName = middle };
+            return new ParticipantInfo() { firstName = given, lastName = sur, middleName = middle, suffix = suffixLocal};
         }
 
         /*public override string ToString()
