@@ -32,32 +32,32 @@ namespace Company.Function
             List<CtrackAddress> addresses;
             string active = "";
             ParticipantInfo entryName;
-            foreach(JObject entry in data)
+            foreach (JObject entry in data)
             {
                 contacts = new List<CtrackContacts>();
                 addresses = new List<CtrackAddress>();
-                if(entry["ATY_STATUS"].Value<string>() == "1")
+                if (entry["ATY_STATUS"].Value<string>() == "1")
                 {
                     active = "10098";
                 }
                 else
                 {
-                   active = "10099"; 
+                    active = "10099";
                 }
                 contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = entry["ATY_PHONE"].Value<string>() });
                 contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["ATY_EMAIL"].Value<string>() });
-                if(entry["ATY_FAX"].Value<string>() != "0000000000")
+                if (entry["ATY_FAX"].Value<string>() != "0000000000")
                 {
                     contacts.Add(new CtrackContacts() { contactType = "24", contactValue = entry["ATY_FAX"].Value<string>() });
                 }
-                addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_1"].Value<string>(), line2 = entry["ATY_ADDR_2"].Value<string>(), zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008",  });
+                addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_1"].Value<string>(), line2 = entry["ATY_ADDR_2"].Value<string>(), zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
                 entryName = ParticipantInfo.ParseName(entry["ATY_FULL_NAME"].Value<string>());
-                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = "10000", attorneyStatus = active, barNumber = entry["ATY_BAR_ID"].Value<string>(), barAdmittedDate = entry["ATY_DOA"].Value<string>()}, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
+                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = "10000", attorneyStatus = active, barNumber = entry["ATY_BAR_ID"].Value<string>(), barAdmittedDate = entry["ATY_DOA"].Value<string>() }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
             }
             CtrackBulkRequest bulkRequest = new CtrackBulkRequest();
-            foreach(CtrackActor actor in actors)
+            foreach (CtrackActor actor in actors)
             {
-                bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = actor});
+                bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = actor });
             }
             return new OkObjectResult(bulkRequest);
         }
@@ -65,11 +65,11 @@ namespace Company.Function
 
     class ParticipantInfo
     {
-        public string prefix {get;set;}
+        public string prefix { get; set; }
         public string firstName { get; set; }
         public string middleName { get; set; }
         public string lastName { get; set; }
-        public string suffix {get;set;}
+        public string suffix { get; set; }
 
         public ParticipantInfo()
         {
@@ -77,7 +77,7 @@ namespace Company.Function
         }
 
         public static ParticipantInfo ParseName(string name)
-        {
+        {            
             int count = name.Split(' ').ToArray().Count();
             string given = "";
             string sur = "";
@@ -86,56 +86,59 @@ namespace Company.Function
             string prefix = "";
             string suffixPattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
             string prefixPattern = @"";
-            switch (count)
+            if (name != "")
             {
-                case 2:
-                    {
-                        sur = name.Split(' ')[0];
-                        given = name.Split(' ')[1];
-                        break;
-                    }
-                case 3:
-                    {
-                        if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
+                switch (count)
+                {
+                    case 2:
                         {
                             sur = name.Split(' ')[0];
                             given = name.Split(' ')[1];
-                            suffixLocal = name.Split(' ')[2];
+                            break;
                         }
-                        else
+                    case 3:
+                        {
+                            if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
+                            {
+                                sur = name.Split(' ')[0];
+                                given = name.Split(' ')[1];
+                                suffixLocal = name.Split(' ')[2];
+                            }
+                            else
+                            {
+                                sur = name.Split(' ')[0];
+                                given = name.Split(' ')[1];
+                                middle = name.Split(' ')[2];
+                            }
+                            break;
+                        }
+                    case 4:
+                        {
+                            if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
+                            {
+                                sur = name.Split(' ')[0];
+                                given = name.Split(' ')[1];
+                                middle = name.Split(' ')[2];
+                                suffixLocal = name.Split(' ')[3];
+                            }
+                            else
+                            {
+                                sur = name.Split(' ')[0];
+                                given = name.Split(' ')[1];
+                                middle = name.Split(' ')[2];
+                            }
+                            break;
+                        }
+                    default:
                         {
                             sur = name.Split(' ')[0];
                             given = name.Split(' ')[1];
                             middle = name.Split(' ')[2];
+                            break;
                         }
-                        break;
-                    }
-                case 4:
-                    {
-                        if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
-                        {
-                            sur = name.Split(' ')[0];
-                            given = name.Split(' ')[1];
-                            middle = name.Split(' ')[2];
-                            suffixLocal = name.Split(' ')[3];
-                        }
-                        else
-                        {
-                            sur = name.Split(' ')[0];
-                            given = name.Split(' ')[1];
-                            middle = name.Split(' ')[2];
-                        }
-                        break;
-                    }
-                default:
-                    {
-                        sur = name.Split(' ')[0];
-                        given = name.Split(' ')[1];
-                        middle = name.Split(' ')[2];
-                        break;
-                    }
+                }
             }
-            return new ParticipantInfo() { firstName = given, lastName = sur, middleName = middle, suffix = suffixLocal};
+            return new ParticipantInfo() { firstName = given, lastName = sur, middleName = middle, suffix = suffixLocal };
         }
 
         /*public override string ToString()
@@ -144,38 +147,41 @@ namespace Company.Function
         }*/
     }
 
-    class CtrackBulkRequest 
+    class CtrackBulkRequest
     {
-        public List<CtrackBulkRequestItem> items {get;set;}
-        public CtrackBulkRequest () {
+        public List<CtrackBulkRequestItem> items { get; set; }
+        public CtrackBulkRequest()
+        {
             items = new List<CtrackBulkRequestItem>();
         }
     }
 
     class CtrackBulkRequestItem
     {
-        public string uri {get;set;}
-        public string httpMethod {get;set;}
-        public CtrackActor requestBody {get;set;}
-        public string resultName {get;}
+        public string uri { get; set; }
+        public string httpMethod { get; set; }
+        public CtrackActor requestBody { get; set; }
+        public string resultName { get; }
 
-        public CtrackBulkRequestItem ()
+        public CtrackBulkRequestItem()
         {
-            resultName = Guid.NewGuid().ToString().Replace("-","");
+            resultName = Guid.NewGuid().ToString().Replace("-", "");
         }
     }
 
-    class CtrackActor {
-        public string actorCategoryID {get;}
-        public CtrackActorDetails actorTypeDetails {get;set;}
-        public string firstName {get;set;}
-        public string middleName {get;set;}
-        public string lastName {get;set;}
-        public string scopeID {get;}
-        public List<CtrackContacts> contacts {get;set;}
-        public List<CtrackAddress> addresses {get;set;}
+    class CtrackActor
+    {
+        public string actorCategoryID { get; }
+        public CtrackActorDetails actorTypeDetails { get; set; }
+        public string firstName { get; set; }
+        public string middleName { get; set; }
+        public string lastName { get; set; }
+        public string scopeID { get; }
+        public List<CtrackContacts> contacts { get; set; }
+        public List<CtrackAddress> addresses { get; set; }
 
-        public CtrackActor(){
+        public CtrackActor()
+        {
             scopeID = "1";
             actorCategoryID = "1";
             contacts = new List<CtrackContacts>();
@@ -183,13 +189,14 @@ namespace Company.Function
         }
     }
 
-    class CtrackActorDetails {
-        public string actorTypeID {get; set;}
-        public string actorSubTypeID {get;}
-        public string attorneyStatus {get;set;}
-        public string barNumber {get;set;}
-        public string effectiveDate {get;set;}
-        public string barAdmittedDate {get;set;}
+    class CtrackActorDetails
+    {
+        public string actorTypeID { get; set; }
+        public string actorSubTypeID { get; }
+        public string attorneyStatus { get; set; }
+        public string barNumber { get; set; }
+        public string effectiveDate { get; set; }
+        public string barAdmittedDate { get; set; }
 
         public CtrackActorDetails()
         {
@@ -200,14 +207,14 @@ namespace Company.Function
 
     class CtrackContacts
     {
-        public string contactType {get;set;}
-        public string contactValue {get;set;}
-        public string scopeID {get;}
-        public bool security1 {get;}
-        public bool security2 {get;}
-        public bool security3 {get;}
-        public bool security4 {get;}
-        public bool security5 {get;}
+        public string contactType { get; set; }
+        public string contactValue { get; set; }
+        public string scopeID { get; }
+        public bool security1 { get; }
+        public bool security2 { get; }
+        public bool security3 { get; }
+        public bool security4 { get; }
+        public bool security5 { get; }
 
         public CtrackContacts()
         {
@@ -216,21 +223,21 @@ namespace Company.Function
         }
     }
 
-    class CtrackAddress 
+    class CtrackAddress
     {
-        public string addressType {get;}
-        public string city {get;set;}
-        public string line1 {get;set;}
-        public string line2 {get;set;}
-        public string regionType {get;set;}
-        public string country {get;}
-        public string scopeID {get;}
-        public string zipCode {get;set;}
-        public bool security1 {get;}
-        public bool security2 {get;}
-        public bool security3 {get;}
-        public bool security4 {get;}
-        public bool security5 {get;}
+        public string addressType { get; }
+        public string city { get; set; }
+        public string line1 { get; set; }
+        public string line2 { get; set; }
+        public string regionType { get; set; }
+        public string country { get; }
+        public string scopeID { get; }
+        public string zipCode { get; set; }
+        public bool security1 { get; }
+        public bool security2 { get; }
+        public bool security3 { get; }
+        public bool security4 { get; }
+        public bool security5 { get; }
 
         public CtrackAddress()
         {
