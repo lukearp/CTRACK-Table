@@ -19,7 +19,7 @@ namespace Company.Function
     {
         [FunctionName("CTRACK_Parse")]
         [StorageAccount("CTRACK_STORAGE")]
-        public static async Task<IActionResult> Run(
+        public static async Task<String> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             [Blob("test/data.json", FileAccess.Read)] Stream blob,
             ILogger log)
@@ -59,7 +59,8 @@ namespace Company.Function
             {
                 bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = actor });
             }
-            return new OkObjectResult(bulkRequest);
+            string returnValue = "--712975333129587337408149\r\nContent-Disposition: form-data; name=\"bulk\"\r\n\r\n" + bulkRequest.ToString() + "\r\n--712975333129587337408149--";
+            return returnValue.ToString();
         }
     }
 
@@ -153,6 +154,11 @@ namespace Company.Function
         public CtrackBulkRequest()
         {
             items = new List<CtrackBulkRequestItem>();
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 
