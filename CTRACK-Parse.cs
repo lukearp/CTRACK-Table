@@ -52,7 +52,8 @@ namespace Company.Function
                 }
                 addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_1"].Value<string>(), line2 = entry["ATY_ADDR_2"].Value<string>(), zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
                 entryName = ParticipantInfo.ParseName(entry["ATY_FULL_NAME"].Value<string>());
-                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = "10000", attorneyStatus = active, barNumber = entry["ATY_BAR_ID"].Value<string>(), barAdmittedDate = entry["ATY_DOA"].Value<string>() }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
+                string barAdmit = entry["ATY_DOA"].Value<DateTime>().ToString("yyyy-MM-dd");
+                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = "10000", attorneyStatus = active, barNumber = entry["ATY_BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
             }
             CtrackBulkRequest bulkRequest = new CtrackBulkRequest();
             foreach (CtrackActor actor in actors)
