@@ -45,12 +45,22 @@ namespace Company.Function
                     active = "10099";
                 }
                 contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = entry["ATY_PHONE"].Value<string>() });
-                contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["ATY_EMAIL"].Value<string>() });
+                if(entry["ATY_EMAIL"].Value<string>() != "")
+                {
+                    contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["ATY_EMAIL"].Value<string>() });
+                }
                 if (entry["ATY_FAX"].Value<string>() != "0000000000")
                 {
                     contacts.Add(new CtrackContacts() { contactType = "24", contactValue = entry["ATY_FAX"].Value<string>() });
                 }
-                addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_1"].Value<string>(), line2 = entry["ATY_ADDR_2"].Value<string>(), zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
+                if (entry["ATY_ADDR_1"].Value<string>() == "" && entry["ATY_ADDR_2"].Value<string>() != "")
+                {
+                    addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_2"].Value<string>(), line2 = "", zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
+                }
+                if (entry["ATY_ADDR_1"].Value<string>() != "")
+                {
+                    addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_1"].Value<string>(), line2 = entry["ATY_ADDR_2"].Value<string>(), zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
+                }
                 entryName = ParticipantInfo.ParseName(entry["ATY_FULL_NAME"].Value<string>());
                 string barAdmit = entry["ATY_DOA"].Value<DateTime>().ToString("yyyy-MM-dd");
                 actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = "10000", attorneyStatus = active, barNumber = entry["ATY_BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
