@@ -25,7 +25,6 @@ namespace Company.Function
             ILogger log)
         {
             string requestBody = await new StreamReader(blob).ReadToEndAsync();
-
             JArray data = JArray.Parse(requestBody);
             List<CtrackActor> actors = new List<CtrackActor>();
             List<CtrackContacts> contacts;
@@ -34,9 +33,10 @@ namespace Company.Function
             ParticipantInfo entryName;
             foreach (JObject entry in data)
             {
+
                 contacts = new List<CtrackContacts>();
                 addresses = new List<CtrackAddress>();
-                if (entry["ATY_STATUS"].Value<string>() == "1")
+                if (entry["ACTOR_STATUS"].Value<string>() == "1")
                 {
                     active = "10098";
                 }
@@ -44,26 +44,26 @@ namespace Company.Function
                 {
                     active = "10099";
                 }
-                contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = entry["ATY_PHONE"].Value<string>() });
-                if(entry["ATY_EMAIL"].Value<string>() != "")
+                contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = entry["PHONE"].Value<string>() });
+                if (entry["EMAIL"].Value<string>() != "")
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["ATY_EMAIL"].Value<string>() });
+                    contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["EMAIL"].Value<string>() });
                 }
-                if (entry["ATY_FAX"].Value<string>() != "0000000000")
+                if (entry["FAX"].Value<string>() != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = entry["ATY_FAX"].Value<string>() });
+                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = entry["FAX"].Value<string>() });
                 }
-                if (entry["ATY_ADDR_1"].Value<string>() == "" && entry["ATY_ADDR_2"].Value<string>() != "")
+                if (entry["ADDR_1"].Value<string>() == "" && entry["ADDR_2"].Value<string>() != "")
                 {
-                    addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_2"].Value<string>(), line2 = "", zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
+                    addresses.Add(new CtrackAddress() { city = entry["CITY"].Value<string>(), line1 = entry["ADDR_2"].Value<string>(), line2 = "", zipCode = entry["ZIP"].Value<string>(), regionType = RegionIds.regions[entry["US_STATE"].Value<string>()] });
                 }
-                if (entry["ATY_ADDR_1"].Value<string>() != "")
+                if (entry["ADDR_1"].Value<string>() != "")
                 {
-                    addresses.Add(new CtrackAddress() { city = entry["ATY_CITY"].Value<string>(), line1 = entry["ATY_ADDR_1"].Value<string>(), line2 = entry["ATY_ADDR_2"].Value<string>(), zipCode = entry["ATY_ZIP"].Value<string>(), regionType = "1000008", });
+                    addresses.Add(new CtrackAddress() { city = entry["CITY"].Value<string>(), line1 = entry["ADDR_1"].Value<string>(), line2 = entry["ADDR_2"].Value<string>(), zipCode = entry["ZIP"].Value<string>(), regionType = RegionIds.regions[entry["US_STATE"].Value<string>()] });
                 }
-                entryName = ParticipantInfo.ParseName(entry["ATY_FULL_NAME"].Value<string>());
-                string barAdmit = entry["ATY_DOA"].Value<DateTime>().ToString("yyyy-MM-dd");
-                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = "10000", attorneyStatus = active, barNumber = entry["ATY_BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
+                entryName = ParticipantInfo.ParseName(entry["FULL_NAME"].Value<string>());
+                string barAdmit = entry["ADMIT_DATE"].Value<DateTime>().ToString("yyyy-MM-dd");
+                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
             }
             CtrackBulkRequest bulkRequest = new CtrackBulkRequest();
             foreach (CtrackActor actor in actors)
@@ -89,7 +89,7 @@ namespace Company.Function
         }
 
         public static ParticipantInfo ParseName(string name)
-        {            
+        {
             int count = name.Split(' ').ToArray().Count();
             string given = "";
             string sur = "";
@@ -263,6 +263,76 @@ namespace Company.Function
             security1 = security2 = security3 = security4 = security5 = false;
             addressType = "21";
         }
+    }
+
+    public static class RegionIds
+    {
+        public static Dictionary<string, string> regions = new Dictionary<string, string>() {
+            {"AA","1000000"},
+            {"AE","1000001"},
+            {"AP","1000002"},
+            {"AS","1000003"},
+            {"FM","1000004"},
+            {"MH","1000005"},
+            {"MP","1000006"},
+            {"AK","1000007"},
+            {"AL","1000008"},
+            {"AR","1000009"},
+            {"AZ","1000010"},
+            {"CA","1000011"},
+            {"CO","1000012"},
+            {"CT","1000013"},
+            {"CZ","1000014"},
+            {"DC","1000015"},
+            {"DE","1000016"},
+            {"FL","1000017"},
+            {"GA","1000018"},
+            {"GU","1000019"},
+            {"HI","1000020"},
+            {"IA","1000021"},
+            {"ID","1000022"},
+            {"IL","1000023"},
+            {"IN","1000024"},
+            {"KS","1000025"},
+            {"KY","1000026"},
+            {"LA","1000027"},
+            {"MA","1000028"},
+            {"MD","1000029"},
+            {"ME","1000030"},
+            {"MI","1000031"},
+            {"MN","1000032"},
+            {"MO","1000033"},
+            {"MS","1000034"},
+            {"MT","1000035"},
+            {"NC","1000037"},
+            {"ND","1000038"},
+            {"NE","1000039"},
+            {"NH","1000040"},
+            {"NJ","1000041"},
+            {"NM","1000042"},
+            {"NV","1000043"},
+            {"NY","1000044"},
+            {"OH","1000045"},
+            {"OK","1000046"},
+            {"OR","1000047"},
+            {"OT","1000048"},
+            {"PA","1000049"},
+            {"PR","1000050"},
+            {"RI","1000051"},
+            {"SC","1000052"},
+            {"SD","1000053"},
+            {"TN","1000054"},
+            {"TX","1000055"},
+            {"US","1000056"},
+            {"UT","1000057"},
+            {"VA","1000058"},
+            {"VI","1000059"},
+            {"VT","1000060"},
+            {"WA","1000061"},
+            {"WI","1000062"},
+            {"WV","1000063"},
+            {"WY","1000064"}
+        };
     }
 }
 
