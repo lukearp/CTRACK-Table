@@ -32,6 +32,7 @@ namespace Company.Function
             string active = "";
             ParticipantInfo entryName;
             string phone;
+            string fax
             foreach (JObject entry in data)
             {
 
@@ -46,6 +47,7 @@ namespace Company.Function
                     active = "10099";
                 }
                 phone = entry["PHONE"].Value<string>().Substring(0,10);
+                fax = entry["FAX"].Value<string>().Substring(0,10);
                 if (phone != "0000000000")
                 {
                     contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = phone });
@@ -54,9 +56,9 @@ namespace Company.Function
                 {
                     contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["EMAIL"].Value<string>() });
                 }
-                if (entry["FAX"].Value<string>() != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
+                if (fax != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = entry["FAX"].Value<string>() });
+                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = fax });
                 }
                 if (entry["ADDR_1"].Value<string>() == "" && entry["ADDR_2"].Value<string>() != "")
                 {
