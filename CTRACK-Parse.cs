@@ -47,7 +47,7 @@ namespace Company.Function
                     active = "10099";
                 }
                 phone = "+1 " + entry["PHONE"].Value<string>().Substring(0,10);
-                fax = "+1 " + entry["FAX"].Value<string>().Substring(0,10);
+                fax = entry["FAX"].Value<string>().Substring(0,10);
                 if (phone != "0000000000")
                 {
                     contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
