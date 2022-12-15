@@ -31,6 +31,7 @@ namespace Company.Function
             List<CtrackAddress> addresses;
             string active = "";
             ParticipantInfo entryName;
+            string phone;
             foreach (JObject entry in data)
             {
 
@@ -44,7 +45,11 @@ namespace Company.Function
                 {
                     active = "10099";
                 }
-                contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = entry["PHONE"].Value<string>() });
+                phone = entry["PHONE"].Value<string>().Substring(0,10);
+                if (phone != "0000000000")
+                {
+                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = phone });
+                }                
                 if (entry["EMAIL"].Value<string>() != "")
                 {
                     contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["EMAIL"].Value<string>() });
