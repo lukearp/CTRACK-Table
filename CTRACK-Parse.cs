@@ -48,7 +48,7 @@ namespace Company.Function
                 phone = entry["PHONE"].Value<string>().Substring(0,10);
                 if (phone != "0000000000")
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = phone });
+                    contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = phone });
                 }                
                 if (entry["EMAIL"].Value<string>() != "")
                 {
