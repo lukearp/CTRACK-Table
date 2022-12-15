@@ -32,7 +32,7 @@ namespace Company.Function
             string active = "";
             ParticipantInfo entryName;
             string phone;
-            string fax
+            string fax;
             foreach (JObject entry in data)
             {
 
