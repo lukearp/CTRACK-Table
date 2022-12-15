@@ -50,15 +50,15 @@ namespace Company.Function
                 fax = entry["FAX"].Value<string>().Substring(0,10);
                 if (phone != "0000000000")
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "400018", contactValue = phone });
+                    contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
                 }                
                 if (entry["EMAIL"].Value<string>() != "")
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "23", contactValue = entry["EMAIL"].Value<string>() });
+                    contacts.Add(new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() });
                 }
                 if (fax != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
                 {
-                    contacts.Add(new CtrackContacts() { contactType = "24", contactValue = fax });
+                    contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
                 }
                 if (entry["ADDR_1"].Value<string>() == "" && entry["ADDR_2"].Value<string>() != "")
                 {
@@ -231,7 +231,7 @@ namespace Company.Function
 
     class CtrackContacts
     {
-        public string contactType { get; set; }
+        public string contactTypeEntityID { get; set; }
         public string contactValue { get; set; }
         public string scopeID { get; }
         public bool security1 { get; }
