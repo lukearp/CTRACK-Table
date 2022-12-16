@@ -47,7 +47,7 @@ namespace Company.Function
                     active = "10099";
                 }
                 phone = "+1 " + entry["PHONE"].Value<string>().Substring(0,10);
-                fax = entry["FAX"].Value<string>().Substring(0,10);                
+                fax = "+1 " + entry["FAX"].Value<string>().Substring(0,10);                
                 if (entry["ADDR_1"].Value<string>() == "" && entry["ADDR_2"].Value<string>() != "")
                 {
                     addresses.Add(new CtrackAddress() { city = entry["CITY"].Value<string>(), line1 = entry["ADDR_2"].Value<string>(), line2 = "", zipCode = entry["ZIP"].Value<string>(), regionType = RegionIds.regions[entry["US_STATE"].Value<string>()] });
