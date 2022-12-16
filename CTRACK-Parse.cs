@@ -27,16 +27,15 @@ namespace Company.Function
             string requestBody = await new StreamReader(blob).ReadToEndAsync();
             JArray data = JArray.Parse(requestBody);
             List<CtrackActor> actors = new List<CtrackActor>();
-            List<CtrackContacts> contacts;
+            CtrackBulkRequest bulkRequest = new CtrackBulkRequest();
             List<CtrackAddress> addresses;
+            CtrackBulkRequestItem actorItem;
             string active = "";
             ParticipantInfo entryName;
             string phone;
             string fax;
             foreach (JObject entry in data)
             {
-
-                contacts = new List<CtrackContacts>();
                 addresses = new List<CtrackAddress>();
                 if (entry["ACTOR_STATUS"].Value<string>() == "1")
                 {
@@ -47,19 +46,7 @@ namespace Company.Function
                     active = "10099";
                 }
                 phone = "+1 " + entry["PHONE"].Value<string>().Substring(0,10);
-                fax = entry["FAX"].Value<string>().Substring(0,10);
-                if (phone != "0000000000")
-                {
-                    contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
-                }                
-                if (entry["EMAIL"].Value<string>() != "")
-                {
-                    contacts.Add(new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() });
-                }
-                if (fax != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
-                {
-                    contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
-                }
+                fax = entry["FAX"].Value<string>().Substring(0,10);                
                 if (entry["ADDR_1"].Value<string>() == "" && entry["ADDR_2"].Value<string>() != "")
                 {
                     addresses.Add(new CtrackAddress() { city = entry["CITY"].Value<string>(), line1 = entry["ADDR_2"].Value<string>(), line2 = "", zipCode = entry["ZIP"].Value<string>(), regionType = RegionIds.regions[entry["US_STATE"].Value<string>()] });
@@ -70,12 +57,24 @@ namespace Company.Function
                 }
                 entryName = ParticipantInfo.ParseName(entry["FULL_NAME"].Value<string>());
                 string barAdmit = entry["ADMIT_DATE"].Value<DateTime>().ToString("yyyy-MM-dd");
-                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, contacts = contacts, addresses = addresses });
-            }
-            CtrackBulkRequest bulkRequest = new CtrackBulkRequest();
-            foreach (CtrackActor actor in actors)
-            {
-                bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = actor });
+                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
+                actorItem = new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()) };
+                bulkRequest.items.Add(actorItem);
+                if (phone != "0000000000")
+                {
+                    bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString())});
+                   // contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
+                }                
+                if (entry["EMAIL"].Value<string>() != "")
+                {
+                    bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString())});
+                    //contacts.Add(new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() });
+                }
+                if (fax != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
+                {
+                    bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax }).ToString())});
+                    //contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
+                }
             }
             string returnValue = "--712975333129587337408149\r\nContent-Disposition: form-data; name=\"bulk\"\r\n\r\n" + bulkRequest.ToString() + "\r\n--712975333129587337408149--";
             return returnValue.ToString();
@@ -184,12 +183,17 @@ namespace Company.Function
     {
         public string uri { get; set; }
         public string httpMethod { get; set; }
-        public CtrackActor requestBody { get; set; }
+        public JObject requestBody { get; set; }
         public string resultName { get; }
 
         public CtrackBulkRequestItem()
         {
             resultName = Guid.NewGuid().ToString().Replace("-", "");
+        }        
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 
@@ -201,15 +205,20 @@ namespace Company.Function
         public string middleName { get; set; }
         public string lastName { get; set; }
         public string scopeID { get; }
-        public List<CtrackContacts> contacts { get; set; }
+        //public List<CtrackContacts> contacts { get; set; }
         public List<CtrackAddress> addresses { get; set; }
 
         public CtrackActor()
         {
             scopeID = "1";
             actorCategoryID = "1";
-            contacts = new List<CtrackContacts>();
+            //contacts = new List<CtrackContacts>();
             addresses = new List<CtrackAddress>();
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 
@@ -226,6 +235,11 @@ namespace Company.Function
         {
             actorSubTypeID = "10000";
             effectiveDate = DateTime.Now.ToString("yyyy-MM-dd");
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 
@@ -244,6 +258,11 @@ namespace Company.Function
         {
             scopeID = "1";
             security1 = security2 = security3 = security4 = security5 = false;
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 
@@ -269,6 +288,11 @@ namespace Company.Function
             scopeID = "1";
             security1 = security2 = security3 = security4 = security5 = false;
             addressType = "21";
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 
