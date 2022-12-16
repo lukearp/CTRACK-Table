@@ -61,7 +61,7 @@ namespace Company.Function
                 actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
                 actorItem = new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
                 bulkRequest.items.Add(actorItem);
-                if (phone != "0000000000")
+                if (phone != "+1 0000000000")
                 {
                     bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count});
                    // contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
@@ -71,7 +71,7 @@ namespace Company.Function
                     bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count});
                     //contacts.Add(new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() });
                 }
-                if (fax != "0000000000" && entry["TYPEID"].Value<string>() == "10000" )
+                if (fax != "+1 0000000000" && entry["TYPEID"].Value<string>() == "10000" )
                 {
                     bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax }).ToString()), resultName = "requestFax" + count});
                     //contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
