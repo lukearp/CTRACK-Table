@@ -65,8 +65,15 @@ namespace Company.Function
                     entryName = ParticipantInfo.ParseNameJudge(entry["FULL_NAME"].Value<string>());
                 }
                 string barAdmit = entry["ADMIT_DATE"].Value<DateTime>().ToString("yyyy-MM-dd");
-                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
-                actorItem = new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
+                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
+                if (entry["EXISTING"].Value<string>() == "-1")
+                {
+                    actorItem = new CtrackBulkRequestItem() { uri = "/v1/actors/", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
+                }
+                else
+                {
+                    actorItem = new CtrackBulkRequestItem() { uri = ("/v1/actors/" + entry["EXISTING"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
+                }
                 bulkRequest.items.Add(actorItem);
                 if (phone != "+1 0000000000")
                 {
@@ -301,6 +308,7 @@ namespace Company.Function
         public string actorSubTypeID { get; }
         public string attorneyStatus { get; set; }
         public string barNumber { get; set; }
+        public string actorTypeName { get; set; }
         public string effectiveDate { get; set; }
         public string barAdmittedDate { get; set; }
 
