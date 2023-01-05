@@ -22,6 +22,7 @@ namespace Company.Function
         public static async Task<String> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             [Blob("test/data.json", FileAccess.Read)] Stream blob,
+            [Blob("test/data-parased.json", FileAccess.Write)] Stream output,
             ILogger log)
         {
             string requestBody = await new StreamReader(blob).ReadToEndAsync();

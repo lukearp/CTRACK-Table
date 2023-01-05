@@ -10,13 +10,6 @@
         ],
         "authLevel": "function",
         "name": "req"
-      },
-      {
-        "name": "inputblob",
-        "type": "blob",
-        "path": "test/data.json",
-        "connection": "CTRACK_STORAGE",
-        "direction": "in"
       }
     ],
     "disabled": false,
