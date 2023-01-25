@@ -38,15 +38,8 @@ namespace Company.Function
             int count = 0;
             foreach (JObject entry in data)
             {
-                addresses = new List<CtrackAddress>();
-                if (entry["ACTOR_STATUS"].Value<string>() == "1")
-                {
-                    active = "10098";
-                }
-                else
-                {
-                    active = "10099";
-                }
+                addresses = new List<CtrackAddress>();                
+                active = entry["ACTOR_STATUS"].Value<string>();
                 phone = "+1 " + entry["PHONE"].Value<string>().Substring(0, 10);
                 fax = "+1 " + entry["FAX"].Value<string>().Substring(0, 10);
                 if (entry["ADDR_1"].Value<string>() == "" && entry["ADDR_2"].Value<string>() != "")
@@ -66,7 +59,7 @@ namespace Company.Function
                     entryName = ParticipantInfo.ParseNameJudge(entry["FULL_NAME"].Value<string>());
                 }
                 string barAdmit = entry["ADMIT_DATE"].Value<DateTime>().ToString("yyyy-MM-dd");
-                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
+                actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000" ,attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
                 if (entry["ActorID"].Value<string>() == "-1")
                 {
                     actorItem = new CtrackBulkRequestItem() { uri = "/v1/actors/", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
@@ -306,7 +299,7 @@ namespace Company.Function
     class CtrackActorDetails
     {
         public string actorTypeID { get; set; }
-        public string actorSubTypeID { get; }
+        public string actorSubTypeID { get; set;}
         public string attorneyStatus { get; set; }
         public string barNumber { get; set; }
         public string actorTypeName { get; set; }
@@ -315,7 +308,6 @@ namespace Company.Function
 
         public CtrackActorDetails()
         {
-            actorSubTypeID = "10000";
             effectiveDate = DateTime.Now.ToString("yyyy-MM-dd");
         }
 
