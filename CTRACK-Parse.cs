@@ -30,7 +30,7 @@ namespace Company.Function
             List<CtrackActor> actors = new List<CtrackActor>();
             CtrackBulkRequest bulkRequest = new CtrackBulkRequest();
             List<CtrackAddress> addresses;
-            CtrackBulkRequestItem actorItem;
+            CtrackBulkRequestItemPost actorItem;
             string active = "";
             ParticipantInfo entryName;
             string phone;
@@ -62,26 +62,33 @@ namespace Company.Function
                 //actors.Add(new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000" ,attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses });
                 if (entry["ActorID"].Value<string>() == "-1")
                 {
-                    actorItem = new CtrackBulkRequestItem() { uri = "/v1/actors", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
+                    actorItem = new CtrackBulkRequestItemPost() { uri = "/v1/actors", httpMethod = "POST", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
                 }
                 else
                 {
-                    actorItem = new CtrackBulkRequestItem() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActor() { actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, addresses = addresses }).ToString()), resultName = "requestActor" + count };
+                    //TODO: Add PUT Action for Address
+                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { /*actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, */firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName}).ToString()), resultName = "requestActor" + count };
                 }
                 bulkRequest.items.Add(actorItem);
-                if (phone != "+1 0000000000")
+                if (phone != "+1 0000000000" && entry["ActorID"].Value<string>() == "-1")
                 {
-                    bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
+                    bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
                     // contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
                 }
-                if (entry["EMAIL"].Value<string>() != "")
+                if (phone != "+1 0000000000" && entry["ActorID"].Value<string>() != "-1")
                 {
-                    bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
+                    CtrackBulkRequestItemGet phoneItem = new CtrackBulkRequestItemGet() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts?contactTypeID=400018", httpMethod = "GET", resultName = "phone" + count };
+                    bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts/${" + phoneItem.resultName + "[0].contactID}", httpMethod = "PUT", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
+                    // contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
+                }
+                if (entry["EMAIL"].Value<string>() != "" && entry["ActorID"].Value<string>() == "-1")
+                {
+                    bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
                     //contacts.Add(new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() });
                 }
-                if (fax != "+1 0000000000" && entry["TYPEID"].Value<string>() == "10000")
+                if (fax != "+1 0000000000" && entry["TYPEID"].Value<string>() == "10000" && entry["ActorID"].Value<string>() == "-1")
                 {
-                    bulkRequest.items.Add(new CtrackBulkRequestItem() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax }).ToString()), resultName = "requestFax" + count });
+                    bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + actorItem.resultName + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax }).ToString()), resultName = "requestFax" + count });
                     //contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
                 }
                 count++;
@@ -89,6 +96,14 @@ namespace Company.Function
             string returnValue = "--712975333129587337408149\r\nContent-Disposition: form-data; name=\"bulk\"\r\n\r\n" + bulkRequest.ToString() + "\r\n--712975333129587337408149--";
             return returnValue.ToString();
         }
+    }
+    
+    interface CtrackItemBulk 
+    {
+        public string uri { get; set; }
+        public string httpMethod { get; set; }
+        public string resultName { get; set; }
+        string ToString();
     }
 
     class ParticipantInfo
@@ -242,10 +257,10 @@ namespace Company.Function
 
     class CtrackBulkRequest
     {
-        public List<CtrackBulkRequestItem> items { get; set; }
+        public List<CtrackItemBulk> items { get; set; }
         public CtrackBulkRequest()
         {
-            items = new List<CtrackBulkRequestItem>();
+            items = new List<CtrackItemBulk>();
         }
 
         public override string ToString()
@@ -254,14 +269,30 @@ namespace Company.Function
         }
     }
 
-    class CtrackBulkRequestItem
+    class CtrackBulkRequestItemPost : CtrackItemBulk
     {
         public string uri { get; set; }
         public string httpMethod { get; set; }
         public JObject requestBody { get; set; }
         public string resultName { get; set; }
 
-        public CtrackBulkRequestItem()
+        public CtrackBulkRequestItemPost()
+        {
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    class CtrackBulkRequestItemGet : CtrackItemBulk
+    {
+        public string uri { get; set; }
+        public string httpMethod { get; set; }
+        public string resultName { get; set; }
+
+        public CtrackBulkRequestItemGet()
         {
         }
 
@@ -283,6 +314,31 @@ namespace Company.Function
         public List<CtrackAddress> addresses { get; set; }
 
         public CtrackActor()
+        {
+            scopeID = "1";
+            actorCategoryID = "1";
+            //contacts = new List<CtrackContacts>();
+            addresses = new List<CtrackAddress>();
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    class CtrackActorUpdate
+    {
+        public string actorCategoryID { get; }
+        //public CtrackActorDetails actorTypeDetails { get; set; }
+        public string firstName { get; set; }
+        public string middleName { get; set; }
+        public string lastName { get; set; }
+        public string scopeID { get; }
+        //public List<CtrackContacts> contacts { get; set; }
+        public List<CtrackAddress> addresses { get; set; }
+
+        public CtrackActorUpdate()
         {
             scopeID = "1";
             actorCategoryID = "1";
