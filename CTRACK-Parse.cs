@@ -38,8 +38,6 @@ namespace Company.Function
             int count = 0;
             foreach (JObject entry in data)
             {
-                if(entry["ActorID"].Value<string>() == "-1")
-                {
                 addresses = new List<CtrackAddress>();                
                 active = entry["ACTOR_STATUS"].Value<string>();
                 phone = "+1 " + entry["PHONE"].Value<string>().Substring(0, 10);
@@ -69,7 +67,7 @@ namespace Company.Function
                 }
                 else
                 {                    
-                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName}).ToString()), resultName = "requestActor" + count };
+                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, scopeID = entry["ScopeID"].Value<string>()}).ToString()), resultName = "requestActor" + count };
                     bulkRequest.items.Add(actorItem);
                     CtrackBulkRequestItemGet addressItem = new CtrackBulkRequestItemGet() { uri = "/v1/addresses?actorID=${" + actorItem.resultName + "}&addressType=21", httpMethod = "GET", resultName = "address" + count };
                     bulkRequest.items.Add(addressItem);
@@ -98,7 +96,6 @@ namespace Company.Function
                     //contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
                 }
                 count++;
-                }
             }
             string returnValue = "--712975333129587337408149\r\nContent-Disposition: form-data; name=\"bulk\"\r\n\r\n" + bulkRequest.ToString() + "\r\n--712975333129587337408149--";
             return returnValue.ToString();
@@ -336,19 +333,18 @@ namespace Company.Function
 
     class CtrackActorUpdate
     {
-        //public string actorCategoryID { get; }
+        public string actorCategoryID { get; }
         //public CtrackActorDetails actorTypeDetails { get; set; }
         public string firstName { get; set; }
         public string middleName { get; set; }
         public string lastName { get; set; }
-        //public string scopeID { get; }
+        public string scopeID { get; set; }
         //public List<CtrackContacts> contacts { get; set; }
         //public List<CtrackAddress> addresses { get; set; }
 
         public CtrackActorUpdate()
         {
-            //scopeID = "1";
-            //actorCategoryID = "1";
+            actorCategoryID = "1";
             //contacts = new List<CtrackContacts>();
             //addresses = new List<CtrackAddress>();
         }
