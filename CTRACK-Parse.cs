@@ -38,6 +38,8 @@ namespace Company.Function
             int count = 0;
             foreach (JObject entry in data)
             {
+                if(entry["ActorID"].Value<string>() == "-1")
+                {
                 addresses = new List<CtrackAddress>();                
                 active = entry["ACTOR_STATUS"].Value<string>();
                 phone = "+1 " + entry["PHONE"].Value<string>().Substring(0, 10);
@@ -67,7 +69,7 @@ namespace Company.Function
                 }
                 else
                 {                    
-                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { /*actorTypeDetails = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "10000", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" }, */firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName}).ToString()), resultName = "requestActor" + count };
+                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName}).ToString()), resultName = "requestActor" + count };
                     bulkRequest.items.Add(actorItem);
                     CtrackBulkRequestItemGet addressItem = new CtrackBulkRequestItemGet() { uri = "/v1/addresses?actorID=${" + actorItem.resultName + "}&addressType=21", httpMethod = "GET", resultName = "address" + count };
                     bulkRequest.items.Add(addressItem);
@@ -96,6 +98,7 @@ namespace Company.Function
                     //contacts.Add(new CtrackContacts() { contactTypeEntityID = "24", contactValue = fax });
                 }
                 count++;
+                }
             }
             string returnValue = "--712975333129587337408149\r\nContent-Disposition: form-data; name=\"bulk\"\r\n\r\n" + bulkRequest.ToString() + "\r\n--712975333129587337408149--";
             return returnValue.ToString();
