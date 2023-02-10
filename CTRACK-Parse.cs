@@ -343,7 +343,7 @@ namespace Company.Function
             scopeID = "1";
             actorCategoryID = "1";
             //contacts = new List<CtrackContacts>();
-            addresses = new List<CtrackAddress>();
+            //addresses = new List<CtrackAddress>();
         }
 
         public override string ToString()
