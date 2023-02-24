@@ -78,8 +78,10 @@ namespace Company.Function
                 }
                 else
                 {
-                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, scopeID = entry["ScopeID"].Value<string>() }).ToString()), resultName = "requestActor" + count };
+                    actorItem = new CtrackBulkRequestItemPost() { uri = ("/v1/actors/" + entry["ActorID"].Value<string>()), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackActorUpdate() { firstName = entryName.firstName, middleName = entryName.middleName, lastName = entryName.lastName, scopeID = entry["ScopeID"].Value<string>(), active = active == "10099" ? false : true }).ToString()), resultName = "requestActor" + count };
                     bulkRequest.items.Add(actorItem);
+                    //CtrackActorDetails details = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "1000023", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" };
+                    //bulkRequest.items.Add();
                     if(entry["HasAddress"].Value<string>() != "-1")
                     {
                         bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/addresses/" + entry["HasAddress"].Value<string>(), httpMethod = "PUT", requestBody = JObject.Parse(addresses[0].ToString()), resultName = "addressUpdate" + count });
@@ -356,6 +358,7 @@ namespace Company.Function
         public string middleName { get; set; }
         public string lastName { get; set; }
         public string scopeID { get; set; }
+        public bool active { get; set; }
         //public List<CtrackContacts> contacts { get; set; }
         //public List<CtrackAddress> addresses { get; set; }
 
