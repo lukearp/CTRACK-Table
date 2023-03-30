@@ -92,20 +92,20 @@ namespace Company.Function
                     }
                     if (phone != "+1 0000000000" && entry["HasPhone"].Value<string>() != "-1")
                     {
-                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + entry["ActorID"].Value<string>() + "}/contacts/" + entry["HasPhone"].Value<string>(), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
+                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts/" + entry["HasPhone"].Value<string>(), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
                         // contacts.Add(new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone });
                     }
                     else if (phone != "+1 0000000000")
                     {
-                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + entry["ActorID"].Value<string>() + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
+                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
                     }
                     if(entry["EMAIL"].Value<string>() != "" && entry["HasEMail"].Value<string>() != "-1")
                     {
-                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + entry["ActorID"].Value<string>() + "}/contacts/" + entry["HasEMail"].Value<string>(), httpMethod = "PUT", requestBody =  JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
+                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts/" + entry["HasEMail"].Value<string>(), httpMethod = "PUT", requestBody =  JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
                     }
                     else if (entry["EMAIL"].Value<string>() != "")
                     {
-                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/${" + entry["ActorID"].Value<string>() + "}/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
+                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
                         //contacts.Add(new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() });
                     }
                 }/*
