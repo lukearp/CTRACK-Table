@@ -81,7 +81,7 @@ namespace Company.Function
                     bulkRequest.items.Add(actorItem);
                     //CtrackActorDetails details = new CtrackActorDetails() { actorTypeID = entry["TYPEID"].Value<string>(), actorSubTypeID = "1000023", attorneyStatus = active, barNumber = entry["BAR_ID"].Value<string>(), barAdmittedDate = barAdmit, actorTypeName = entry["TYPEID"].Value<string>() == "10000" ? "Attorney" : "Judge" };
                     //bulkRequest.items.Add();
-                    if(entry["HasAddress"].Value<string>() != "-1")
+                    if (entry["HasAddress"].Value<string>() != "-1")
                     {
                         bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/addresses/" + entry["HasAddress"].Value<string>(), httpMethod = "PUT", requestBody = JObject.Parse(addresses[0].ToString()), resultName = "addressUpdate" + count });
                     }
@@ -98,9 +98,9 @@ namespace Company.Function
                     {
                         bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts", httpMethod = "POST", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "400018", contactValue = phone }).ToString()), resultName = "ContactNum" + count });
                     }
-                    if(entry["EMAIL"].Value<string>() != "" && entry["HasEMail"].Value<string>() != "-1")
+                    if (entry["EMAIL"].Value<string>() != "" && entry["HasEMail"].Value<string>() != "-1")
                     {
-                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts/" + entry["HasEMail"].Value<string>(), httpMethod = "PUT", requestBody =  JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
+                        bulkRequest.items.Add(new CtrackBulkRequestItemPost() { uri = "/v1/actors/" + entry["ActorID"].Value<string>() + "/contacts/" + entry["HasEMail"].Value<string>(), httpMethod = "PUT", requestBody = JObject.Parse((new CtrackContacts() { contactTypeEntityID = "23", contactValue = entry["EMAIL"].Value<string>() }).ToString()), resultName = "requestEmail" + count });
                     }
                     else if (entry["EMAIL"].Value<string>() != "")
                     {
@@ -157,23 +157,23 @@ namespace Company.Function
                 {
                     case 2:
                         {
-                            sur = name.Split(' ')[0];
-                            given = name.Split(' ')[1];
+                            sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
+                            given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
                             break;
                         }
                     case 3:
                         {
                             if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
                             {
-                                sur = name.Split(' ')[0];
-                                given = name.Split(' ')[1];
+                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
+                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
                                 suffixLocal = name.Split(' ')[2];
                             }
                             else
                             {
-                                sur = name.Split(' ')[0];
-                                given = name.Split(' ')[1];
-                                middle = name.Split(' ')[2];
+                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
+                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
+                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
                             }
                             break;
                         }
@@ -181,24 +181,24 @@ namespace Company.Function
                         {
                             if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
                             {
-                                sur = name.Split(' ')[0];
-                                given = name.Split(' ')[1];
-                                middle = name.Split(' ')[2];
+                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
+                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
+                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
                                 suffixLocal = name.Split(' ')[3];
                             }
                             else
                             {
-                                sur = name.Split(' ')[0];
-                                given = name.Split(' ')[1];
-                                middle = name.Split(' ')[2];
+                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
+                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
+                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
                             }
                             break;
                         }
                     default:
                         {
-                            sur = name.Split(' ')[0];
-                            given = name.Split(' ')[1];
-                            middle = name.Split(' ')[2];
+                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
+                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
+                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
                             break;
                         }
                 }
