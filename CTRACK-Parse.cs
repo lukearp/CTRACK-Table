@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Microsoft.Azure.WebJobs.Extensions.Storage.Blobs;
+using System.Globalization;
 
 namespace Company.Function
 {
@@ -135,6 +136,7 @@ namespace Company.Function
         public string middleName { get; set; }
         public string lastName { get; set; }
         public string suffix { get; set; }
+        static CultureInfo titleCase = new CultureInfo("en-US");
 
         public ParticipantInfo()
         {
@@ -151,54 +153,55 @@ namespace Company.Function
             string prefix = "";
             string suffixPattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
             string prefixPattern = @"";
+            string[] splitName = name.Split(' ');
             if (name != "")
             {
                 switch (count)
                 {
                     case 2:
                         {
-                            sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
-                            given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
+                            sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                            given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
                             break;
                         }
                     case 3:
                         {
-                            if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
+                            if (Regex.IsMatch(splitName[2], suffixPattern))
                             {
-                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
-                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
-                                suffixLocal = name.Split(' ')[2];
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                suffixLocal = splitName[2];
                             }
                             else
                             {
-                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
-                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
-                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
                             }
                             break;
                         }
                     case 4:
                         {
-                            if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
+                            if (Regex.IsMatch(splitName[3], suffixPattern))
                             {
-                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
-                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
-                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
-                                suffixLocal = name.Split(' ')[3];
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                                suffixLocal = splitName[3];
                             }
                             else
                             {
-                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
-                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
-                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
                             }
                             break;
                         }
                     default:
                         {
-                                sur = name.Split(' ')[0][0] + String.Join(name.Split(' ')[0][1..(name.Split(' ')[0].Length - 1)], "").ToLower();
-                                given = name.Split(' ')[1][0] + String.Join(name.Split(' ')[1][1..(name.Split(' ')[1].Length - 1)], "").ToLower();
-                                middle = name.Split(' ')[2][0] + String.Join(name.Split(' ')[2][1..(name.Split(' ')[2].Length - 1)], "").ToLower();;
+                            sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                            given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                            middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
                             break;
                         }
                 }
@@ -216,29 +219,30 @@ namespace Company.Function
             string prefix = "";
             string suffixPattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
             string prefixPattern = @"";
+            string[] splitName = name.Split(' ');
             if (name != "")
             {
                 switch (count)
                 {
                     case 2:
                         {
-                            sur = name.Split(' ')[1];
-                            given = name.Split(' ')[0];
+                            sur = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                            given = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
                             break;
                         }
                     case 3:
                         {
                             if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
                             {
-                                sur = name.Split(' ')[1];
-                                given = name.Split(' ')[0];
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
                                 suffixLocal = name.Split(' ')[2];
                             }
                             else
                             {
-                                sur = name.Split(' ')[2];
-                                given = name.Split(' ')[0];
-                                middle = name.Split(' ')[1];
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
                             }
                             break;
                         }
@@ -246,24 +250,24 @@ namespace Company.Function
                         {
                             if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
                             {
-                                sur = name.Split(' ')[2];
-                                given = name.Split(' ')[0];
-                                middle = name.Split(' ')[1];
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
                                 suffixLocal = name.Split(' ')[3];
                             }
                             else
                             {
-                                sur = name.Split(' ')[2];
-                                given = name.Split(' ')[0];
-                                middle = name.Split(' ')[1];
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
                             }
                             break;
                         }
                     default:
                         {
-                            sur = name.Split(' ')[2];
-                            given = name.Split(' ')[0];
-                            middle = name.Split(' ')[1];
+                            sur = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                            given = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                            middle = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
                             break;
                         }
                 }
