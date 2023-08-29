@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
@@ -59,94 +60,182 @@ namespace Luke.Function
         CivilCourt = 3
     }
 
+    class ParsedName 
+    {
+        public string prefix {get;set;}
+        public string firstName {get;set;}
+        public string lastName {get;set;}
+        public string middleName {get;set;}
+        public string suffix {get;set;}
+    }
+
     class ParticipantInfo
     {
-        public string givenName { get; set; }
-        public string middleName { get; set; }
-        public string surName { get; set; }
-        public string streetAddress { get; set; }
-        public string city { get; set; }
-        public string state { get; set; }
-        public string country { get; set; }
-        public string zipCode { get; set; }
-        public string phone { get; set; }
-        public string role { get; }
-        public string email { get; set; }
-        public string attorneyBar { get; set; }
-        public string guid { get; }
-        public bool attorney { get; set; }
-        public bool judge { get; set; }
-
-        public ParticipantInfo(bool attorney)
-        {
-            this.guid = Guid.NewGuid().ToString();
-            this.email = "";
-            this.phone = "";
-            this.attorney = attorney;
-            if (attorney == true)
-            {
-                this.role = "10004";
-            }
-            else
-            {
-                this.role = "1000000";
-            }
-        }
+        public string guid {get;set;}
+        public string givenName {get;set;}
+        public string surName {get;set;}
+        public string middleName {get;set;}
+        public string streetAddress {get;set;}
+        public string city {get;set;}
+        public string state {get;set;}
+        public string country {get;set;}
+        public string zipCode {get;set;}
+        public string phone {get;set;}
+        public string role {get;set;}
+        public string email {get;set;}
+        public bool attorney {get;set;}
+        public bool judge {get;set;}
+        public string attorneyBar {get;set;}
+        public string actorInstanceId {get;set;}
+        static CultureInfo titleCase = new CultureInfo("en-US");
 
         public ParticipantInfo(string name, bool attorney, bool judge)
         {
             this.guid = Guid.NewGuid().ToString();
-            this.email = "";
-            this.phone = "";
+            ParsedName parsedName;
             this.attorney = attorney;
             this.judge = judge;
-            if (attorney == true)
-            {
-                this.role = "10004";
+            if(judge) {
+                parsedName = ParseNameJudge(name);
             }
-            else if (judge == true)
-            {
-                this.role = "10002";
+            else {
+                parsedName = ParseNameAttorney(name);
             }
-            else
-            {
-                this.role = "1000000";
-            }
+            this.givenName = parsedName.firstName;
+            this.middleName = parsedName.middleName;
+            this.surName = parsedName.lastName;
+        }
+
+        public static ParsedName ParseNameAttorney(string name)
+        {
             int count = name.Split(' ').ToArray().Count();
+            string given = "";
+            string sur = "";
+            string middle = "";
+            string suffixLocal = "";
+            string prefix = "";
             string suffixPattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
-            string prefixPattern = @"/(Mr|Mrs|Ms|Dr|Er)\.[a-zA-Z]+/";
-            switch (count)
+            string prefixPattern = @"";
+            string[] splitName = name.Split(' ');
+            if (name != "")
             {
-                case 2:
-                    {
-                        surName = name.Split(' ')[0];
-                        givenName = name.Split(' ')[1];
-                        break;
-                    }
-                case 3:
-                    {
-                        if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
+                switch (count)
+                {
+                    case 2:
                         {
-                            surName = name.Split(' ')[0];
-                            givenName = name.Split(' ')[1];
+                            sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                            given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                            break;
                         }
-                        else
+                    case 3:
                         {
-                            surName = name.Split(' ')[0];
-                            givenName = name.Split(' ')[1];
-                            middleName = name.Split(' ')[2];
+                            if (Regex.IsMatch(splitName[2], suffixPattern))
+                            {
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                suffixLocal = splitName[2];
+                            }
+                            else
+                            {
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                            }
+                            break;
                         }
-                        break;
-                    }
-                default:
-                    {
-                        surName = name.Split(' ')[0];
-                        givenName = name.Split(' ')[1];
-                        middleName = name.Split(' ')[2];
-                        break;
-                    }
+                    case 4:
+                        {
+                            if (Regex.IsMatch(splitName[3], suffixPattern))
+                            {
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                                suffixLocal = splitName[3];
+                            }
+                            else
+                            {
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                                sur = titleCase.TextInfo.ToTitleCase(splitName[0].ToLower());
+                                given = titleCase.TextInfo.ToTitleCase(splitName[1].ToLower());
+                                middle = titleCase.TextInfo.ToTitleCase(splitName[2].ToLower());
+                            break;
+                        }
+                }
             }
-            //return new ParticipantInfo(attorney) { givenName = given, surName = sur, middleName = middle };
+            return new ParsedName() { firstName = given, lastName = sur, middleName = middle, suffix = suffixLocal };
+        }
+
+        public static ParsedName ParseNameJudge(string name)
+        {
+            int count = name.Split(' ').ToArray().Count();
+            string given = "";
+            string sur = "";
+            string middle = "";
+            string suffixLocal = "";
+            string prefix = "";
+            string suffixPattern = @"^((?:[JS]r\.?|III?|IV|V|VI.*|I.*X|X))?$";
+            string prefixPattern = @"";
+            string[] splitName = name.Split(' ');
+            if (name != "")
+            {
+                switch (count)
+                {
+                    case 2:
+                        {
+                            sur = name.Split(' ')[1];
+                            given = name.Split(' ')[0];
+                            break;
+                        }
+                    case 3:
+                        {
+                            if (Regex.IsMatch(name.Split(' ')[2], suffixPattern))
+                            {
+                                sur = name.Split(' ')[1];
+                                given = name.Split(' ')[0];
+                                suffixLocal = name.Split(' ')[2];
+                            }
+                            else
+                            {
+                                sur = name.Split(' ')[2];
+                                given = name.Split(' ')[0];
+                                middle = name.Split(' ')[1];
+                            }
+                            break;
+                        }
+                    case 4:
+                        {
+                            if (Regex.IsMatch(name.Split(' ')[3], suffixPattern))
+                            {
+                                sur = name.Split(' ')[2];
+                                given = name.Split(' ')[0];
+                                middle = name.Split(' ')[1];
+                                suffixLocal = name.Split(' ')[3];
+                            }
+                            else
+                            {
+                                sur = name.Split(' ')[2];
+                                given = name.Split(' ')[0];
+                                middle = name.Split(' ')[1];
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            sur = name.Split(' ')[2];
+                            given = name.Split(' ')[0];
+                            middle = name.Split(' ')[1];
+                            break;
+                        }
+                }
+            }
+            return new ParsedName() { firstName = given, lastName = sur, middleName = middle, suffix = suffixLocal };
         }
 
         /*public override string ToString()
@@ -154,6 +243,7 @@ namespace Luke.Function
             return JsonConvert.SerializeObject(this);
         }*/
     }
+
 
     class TransformXML
     {
@@ -270,7 +360,57 @@ namespace Luke.Function
 						<ns7:MatterNumber xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true""/>
 					</ns7:CaseAugmentation>
 				</ns6:CriminalCase>
-				<ns19:FilingConfidentialityIndicator>false</ns19:FilingConfidentialityIndicator>				
+				<ns19:FilingConfidentialityIndicator>false</ns19:FilingConfidentialityIndicator>
+				<ns19:FilingLeadDocument xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" ns1:id=""DocumentLink3"" xsi:type=""ns7:CtrackDocumentType"">
+					<ns2:DocumentApplicationName xsi:nil=""true""/>
+					<ns2:DocumentDescriptionText>This is a lead document</ns2:DocumentDescriptionText>
+					<ns2:DocumentEffectiveDate xsi:nil=""true""/>
+					<ns2:DocumentFileControlID xsi:nil=""true""/>
+					<ns2:DocumentFiledDate>
+						<ns2:DateTime>2022-06-14T16:26:00.000-04:00</ns2:DateTime>
+					</ns2:DocumentFiledDate>					
+					<ns2:DocumentInformationCutOffDate xsi:nil=""true""/>
+					<ns2:DocumentPostDate xsi:nil=""true""/>
+					<ns2:DocumentReceivedDate xsi:nil=""true""/>
+					<ns2:DocumentSequenceID xsi:nil=""true""/>
+					<ns2:DocumentStatus xsi:nil=""true""/>
+					<ns2:DocumentTitleText>Brief - Brief Filed</ns2:DocumentTitleText>
+					<ns2:DocumentSubmitter xsi:nil=""true""/>
+					<ns4:DocumentMetadata>
+						<ns3:RegisterActionDescriptionText xsi:nil=""true""/>
+						{7}
+					</ns4:DocumentMetadata>
+					<ns7:Confidential>false</ns7:Confidential>
+					<ns7:ExcludeFromService>false</ns7:ExcludeFromService>
+					<ns7:CustomFields>
+						<ns7:CustomFieldsEntry>
+							<entryKey>confidential</entryKey>
+							<entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xsi:type=""xs:boolean"">false</entryValue>
+						</ns7:CustomFieldsEntry>
+						<ns7:CustomFieldsEntry>
+							<entryKey>excludeFromService</entryKey>
+							<entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xsi:type=""xs:boolean"">false</entryValue>
+						</ns7:CustomFieldsEntry>
+					</ns7:CustomFields>
+				</ns19:FilingLeadDocument>
+				<ns19:FilingConnectedDocument xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" ns1:id=""DocumentLink4"" xsi:type=""ns7:CtrackDocumentType"">
+					<ns2:DocumentApplicationName xsi:nil=""true""/>
+					<ns2:DocumentDescriptionText>This is a connected document that is flagged as 'exclude from service' and 'confidential' (with confidential reasons)</ns2:DocumentDescriptionText>
+					<ns2:DocumentEffectiveDate xsi:nil=""true""/>
+					<ns2:DocumentFileControlID xsi:nil=""true""/>
+					<ns2:DocumentFiledDate>
+						<ns2:DateTime>2022-06-14T16:26:00-04:00</ns2:DateTime>
+					</ns2:DocumentFiledDate>
+					<ns2:DocumentInformationCutOffDate xsi:nil=""true""/>
+					<ns2:DocumentPostDate xsi:nil=""true""/>
+					<ns2:DocumentReceivedDate xsi:nil=""true""/>
+					<ns2:DocumentSequenceID xsi:nil=""true""/>
+					<ns2:DocumentStatus xsi:nil=""true""/>
+					<ns2:DocumentTitleText>Appendix</ns2:DocumentTitleText>
+					<ns2:DocumentSubmitter xsi:nil=""true""/>
+					<ns7:Confidential>false</ns7:Confidential>
+					<ns7:ExcludeFromService>false</ns7:ExcludeFromService>
+				</ns19:FilingConnectedDocument>
 				<ns7:BatchID>{3}</ns7:BatchID>
 				<ns7:FilingSubTypeID>1000428</ns7:FilingSubTypeID>
 				<ns7:CustomFields>
@@ -323,37 +463,35 @@ namespace Luke.Function
         {
             List<string> attorneys = new List<string>();
             List<string> caseparticipants = new List<string>();
+            List<string> filingParties = new List<string>();
             int count = 0;
             foreach (ParticipantInfo participant in participants)
             {
                 caseparticipants.Add(CaseParticipant.ReturnXML(participant.guid,
-                participant.givenName.Trim(),
-                participant.middleName.Trim(),
-                participant.surName.Trim(),
-                participant.streetAddress.Trim(),
-                participant.city.Trim(),
-                participant.state.Trim(),
-                participant.country.Trim(),
-                participant.zipCode.Trim(),
-                participant.phone.Trim(),
-                participant.role.Trim(),
-                participant.email.Trim(),
+                participant.givenName,
+                participant.middleName,
+                participant.surName,
+                participant.streetAddress,
+                participant.city,
+                participant.state,
+                participant.country,
+                participant.zipCode,
+                participant.phone,
+                participant.role,
+                participant.email,
                 participant.attorney,
-                participant.judge,
-                count));
+                count,
+                participant.actorInstanceId));
                 count++;
             }
             foreach (ParticipantInfo attorney in participants.Where(x => x.attorney == true))
             {
-                //foreach (ParticipantInfo client in participants.Where(x => x.attorney == false && x.attorneyBar == attorney.attorneyBar))
-                //{
-                    attorneys.Add(CaseOfficial.ReturnXML(attorney.guid, attorney.attorneyBar, participants.First(x => x.attorney == false && x.judge == false).guid));
-                //}
+                foreach (ParticipantInfo client in participants.Where(x => x.attorney == false && x.attorneyBar == attorney.attorneyBar))
+                {
+                    attorneys.Add(CaseOfficial.ReturnXML(attorney.guid, attorney.attorneyBar, client.guid));
+                    filingParties.Add(FilingParty.ReturnXML(client.guid));
+                }
             }
-            /*foreach (ParticipantInfo judges in participants.Where(x => x.judge == true))
-            {
-                attorneys.Add(CaseOfficial.ReturnXML(judges.guid, judges.attorneyBar));
-            }*/
             string date = DateTime.Now.ToString("s");
             string baseId = date.Replace("-", "").Replace(":", "").Replace("T", "");
             //string batch = Guid.NewGuid().ToString().Replace("-",""); 
@@ -364,7 +502,8 @@ namespace Luke.Function
             baseId,
             date,
             baseId,
-            (int)CourtType);
+            (int)CourtType,
+            string.Join("", filingParties.ToArray()));
         }
     }
 
@@ -384,27 +523,9 @@ namespace Luke.Function
     <ns4:CaseRepresentedPartyReference ns1:ref=""NewParticipant{2}"" />
 </ns4:CaseOfficial>";
 
-        static string judgeXml = @"<ns4:CaseOfficial>
-    <ns2:RoleOfPersonReference ns1:ref=""NewParticipant{0}"" />
-    <ns3:JudicialOfficialBarMembership>
-        <ns3:JudicialOfficialBarIdentification>
-            <ns2:IdentificationID>{1}</ns2:IdentificationID>
-            <ns2:IdentificationSourceText xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-        </ns3:JudicialOfficialBarIdentification>
-    </ns3:JudicialOfficialBarMembership>
-    <ns3:JudicialOfficialFirm xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-    <ns3:CaseOfficialCaseIdentification xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-    <ns3:CaseOfficialRoleText xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-</ns4:CaseOfficial>";
-
         public static string ReturnXML(string refId, string bar, string clientId)
         {
             return String.Format(baseXml, refId, bar, clientId);
-        }
-
-        public static string ReturnXML(string refId, string bar)
-        {
-            return String.Format(judgeXml, refId, bar);
         }
     }
 
@@ -455,7 +576,13 @@ namespace Luke.Function
         <ns2:ContactInformationDescriptionText>Address</ns2:ContactInformationDescriptionText>
         <ns2:ContactResponder xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
     </ns2:ContactInformation>
-    {11}
+    <ns2:ContactInformation>
+        <ns2:ContactMeans xmlns:ns50=""http://niem.gov/niem/proxy/xsd/2.0"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""ns50:string"">{11}</ns2:ContactMeans>
+        <ns2:ContactEntity xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
+        <ns2:ContactEntityDescriptionText xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
+        <ns2:ContactInformationDescriptionText>Primary Email</ns2:ContactInformationDescriptionText>
+        <ns2:ContactResponder xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
+    </ns2:ContactInformation>
     <ns2:ContactInformation>
         <ns2:ContactMeans xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""ns2:TelephoneNumberType"">
             <ns2:TelephoneNumberRepresentation xsi:type=""ns2:FullTelephoneNumberType"">
@@ -474,13 +601,6 @@ namespace Luke.Function
 	</ns7:CustomFields>
 </ns7:CaseParticipant>";
 
-        static string primaryEmail = @"<ns2:ContactInformation>
-        <ns2:ContactMeans xmlns:ns50=""http://niem.gov/niem/proxy/xsd/2.0"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""ns50:string"">{0}</ns2:ContactMeans>
-        <ns2:ContactEntity xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-        <ns2:ContactEntityDescriptionText xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-        <ns2:ContactInformationDescriptionText>Primary Email</ns2:ContactInformationDescriptionText>
-        <ns2:ContactResponder xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:nil=""true"" />
-    </ns2:ContactInformation>";
         static string attorneyCustomFieldsXml = @"<ns7:CustomFieldsEntry>
         <entryKey>parentEntityID</entryKey>
         <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">45</entryValue>
@@ -508,6 +628,43 @@ namespace Luke.Function
     <ns7:CustomFieldsEntry>
         <entryKey>serviceTypeExternalID</entryKey>
         <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">1000243</entryValue>
+    </ns7:CustomFieldsEntry>";
+
+        static string attorneyLinkedCustomFieldsXml = @"<ns7:CustomFieldsEntry>
+        <entryKey>parentEntityID</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">45</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>entityTypeName</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:string"">Person</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>efileEntityID</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">{0}</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>efileEntityAddressID</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">19</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>serviceDate</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:dateTime"">2022-05-05T15:14:00-04:00</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>serviceTypeName</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:string"">E-mail Delivery</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>serviceTypeExternalID</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">1000243</entryValue>
+    </ns7:CustomFieldsEntry>
+    <ns7:CustomFieldsEntry>
+        <entryKey>actorInstanceID</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">{1}</entryValue>
+   </ns7:CustomFieldsEntry>
+   <ns7:CustomFieldsEntry>
+        <entryKey>actorInstanceName</entryKey>
+        <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:string"">{2}</entryValue>
     </ns7:CustomFieldsEntry>";
 
         static string clientCustomFieldsXml = @"<ns7:CustomFieldsEntry>
@@ -547,16 +704,35 @@ namespace Luke.Function
         <entryValue xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xsi:type=""xs:long"">1000242</entryValue>
     </ns7:CustomFieldsEntry>";
 
-        public static string ReturnXML(string id, string givenName, string middleName, string surName, string streetAddress, string city, string state, string country, string zipCode, string phone, string role, string email, bool attorney, bool judge, int efileEntityID)
+        public static string ReturnXML(string id, string givenName, string middleName, string surName, string streetAddress, string city, string state, string country, string zipCode, string phone, string role, string email, bool attorney, int efileEntityID, string actorInstanceId)
         {
-            if (attorney == true || judge == true)
+            if (attorney == true && actorInstanceId == "")
             {
-                return String.Format(baseXml, id, givenName, middleName, surName, streetAddress, city, state, country, zipCode, phone, role, String.Format(primaryEmail,email), String.Format(attorneyCustomFieldsXml, efileEntityID.ToString()));
+                return String.Format(baseXml, id, givenName, middleName, surName, streetAddress, city, state, country, zipCode, phone, role, email, String.Format(attorneyCustomFieldsXml, efileEntityID.ToString()));
+            }
+            else if (attorney == true && actorInstanceId != "")
+            {
+                string fullName = givenName + " " + middleName + " " + surName;
+                return String.Format(baseXml, id, givenName, middleName, surName, streetAddress, city, state, country, zipCode, phone, role, email, String.Format(attorneyLinkedCustomFieldsXml, efileEntityID.ToString(), actorInstanceId, fullName));
             }
             else
             {
-                return String.Format(baseXml, id, givenName, middleName, surName, streetAddress, city, state, country, zipCode, phone, role, "", String.Format(clientCustomFieldsXml, efileEntityID.ToString()));
+                return String.Format(baseXml, id, givenName, middleName, surName, streetAddress, city, state, country, zipCode, phone, role, email, String.Format(clientCustomFieldsXml, efileEntityID.ToString()));
             }
+        }
+    }
+
+    class FilingParty 
+    {
+        static string baseXml = @"<ns4:FilingPartyID>
+							<ns2:IdentificationID>NewParticipant{0}</ns2:IdentificationID>
+							<ns2:IdentificationCategoryText>New Case Participant</ns2:IdentificationCategoryText>
+							<ns2:IdentificationSourceText xsi:nil=""true""/>
+						</ns4:FilingPartyID>";
+
+        public static string ReturnXML(string participant)
+        {
+            return String.Format(baseXml, participant);
         }
     }
 
